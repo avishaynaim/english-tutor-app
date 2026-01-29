@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>English Tutor - מורה לאנגלית</title>
+  <meta name="description" content="Learn English with interactive speech recognition - למד אנגלית עם זיהוי דיבור">
+  <meta name="theme-color" content="#6366f1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎓</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Animated background -->
+    <div class="bg-gradient"></div>
+    <div class="bg-shapes">
+      <div class="shape shape-1"></div>
+      <div class="shape shape-2"></div>
+      <div class="shape shape-3"></div>
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+      <button class="btn-icon back-btn" id="backBtn" aria-label="חזור">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9 18l6-6-6-6"/>
+        </svg>
+      </button>
+      <div class="header-content">
+        <h1 id="headerTitle">English Tutor</h1>
+        <p id="headerSub">בחר נושא ללמוד</p>
+      </div>
+      <button class="btn-icon settings-btn" id="settingsBtn" aria-label="הגדרות">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+        </svg>
+      </button>
+    </header>
+
+    <!-- Stats Bar -->
+    <div class="stats-bar" id="statsBar">
+      <div class="stat">
+        <span class="stat-icon">⭐</span>
+        <span class="stat-value" id="scoreVal">0</span>
+        <span class="stat-label">נקודות</span>
+      </div>
+      <div class="stat">
+        <span class="stat-icon">🔥</span>
+        <span class="stat-value" id="streakVal">0</span>
+        <span class="stat-label">רצף</span>
+      </div>
+      <div class="stat">
+        <span class="stat-icon">🎯</span>
+        <span class="stat-value" id="attemptVal">1</span>
+        <span class="stat-label">ניסיון</span>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Topics Grid -->
+      <div class="topics-view" id="topicsView">
+        <div class="welcome-card">
+          <div class="welcome-icon">👋</div>
+          <h2>!שלום</h2>
+          <p>בחר נושא להתחיל ללמוד אנגלית</p>
+        </div>
+        <div class="topics-grid" id="topicsGrid"></div>
+      </div>
+
+      <!-- Lesson View -->
+      <div class="lesson-view hidden" id="lessonView">
+        <div class="progress-container">
+          <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+          </div>
+          <span class="progress-text" id="progressText">1 / 8</span>
+        </div>
+
+        <div class="lesson-card">
+          <div class="lesson-intro" id="introText">הקשב ואז חזור:</div>
+          <div class="lesson-sentence" id="sentenceText"></div>
+          <div class="lesson-translation" id="translationText"></div>
+          <button class="btn-audio" id="replayBtn" aria-label="השמע שוב">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="5 3 19 12 5 21 5 3"/>
+            </svg>
+            השמע שוב
+          </button>
+        </div>
+
+        <div class="feedback-area" id="feedbackArea">
+          <div class="feedback-message" id="feedback"></div>
+        </div>
+
+        <div class="action-area" id="actionArea">
+          <!-- Listening State -->
+          <div class="state-indicator listening hidden" id="listeningState">
+            <div class="ear-animation">
+              <span class="ear-icon">👂</span>
+              <div class="sound-waves">
+                <span></span><span></span><span></span>
+              </div>
+            </div>
+            <p>...הקשב</p>
+          </div>
+
+          <!-- Speaking State -->
+          <div class="state-indicator speaking hidden" id="speakingState">
+            <div class="mic-button active">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
+                <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+              </svg>
+            </div>
+            <div class="voice-bars">
+              <span></span><span></span><span></span><span></span><span></span>
+            </div>
+            <p>...דבר עכשיו</p>
+          </div>
+
+          <!-- Idle State -->
+          <div class="state-indicator idle" id="idleState">
+            <button class="btn-start-speaking" id="startSpeakingBtn">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
+                <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+              </svg>
+              לחץ לדבר
+            </button>
+          </div>
+        </div>
+
+        <button class="btn-skip hidden" id="skipBtn">
+          דלג על זה ←
+        </button>
+      </div>
+
+      <!-- Complete Screen -->
+      <div class="complete-view hidden" id="completeView">
+        <div class="complete-card">
+          <div class="complete-icon">🎉</div>
+          <h2>!כל הכבוד</h2>
+          <div class="complete-stats">
+            <div class="complete-stat">
+              <span class="complete-stat-value" id="finalScore">0</span>
+              <span class="complete-stat-label">נקודות</span>
+            </div>
+            <div class="complete-stat">
+              <span class="complete-stat-value" id="finalAccuracy">0%</span>
+              <span class="complete-stat-label">דיוק</span>
+            </div>
+          </div>
+          <p class="complete-message">סיימת את השיעור בהצלחה!</p>
+          <button class="btn-primary" id="continueBtn">בחר שיעור נוסף</button>
+        </div>
+      </div>
+
+      <!-- No Support Message -->
+      <div class="no-support hidden" id="noSupport">
+        <div class="no-support-card">
+          <div class="no-support-icon">😔</div>
+          <h2>הדפדפן לא נתמך</h2>
+          <p>האפליקציה דורשת תמיכה בזיהוי דיבור.<br>נא להשתמש ב-<strong>Google Chrome</strong></p>
+        </div>
+      </div>
+    </main>
+
+    <!-- Settings Modal -->
+    <div class="modal hidden" id="settingsModal">
+      <div class="modal-backdrop"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>הגדרות</h3>
+          <button class="btn-icon modal-close" id="closeSettings">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 6L6 18M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="setting-item">
+            <label>מהירות דיבור</label>
+            <div class="setting-control">
+              <input type="range" id="speechRate" min="0.5" max="1.5" step="0.1" value="0.85">
+              <span id="speechRateVal">0.85x</span>
+            </div>
+          </div>
+          <div class="setting-item">
+            <label>מצב כהה</label>
+            <div class="setting-control">
+              <button class="toggle-btn" id="darkModeToggle" role="switch" aria-checked="false">
+                <span class="toggle-slider"></span>
+              </button>
+            </div>
+          </div>
+          <div class="setting-item">
+            <label>רטט</label>
+            <div class="setting-control">
+              <button class="toggle-btn active" id="vibrationToggle" role="switch" aria-checked="true">
+                <span class="toggle-slider"></span>
+              </button>
+            </div>
+          </div>
+          <div class="setting-item">
+            <label>איפוס התקדמות</label>
+            <div class="setting-control">
+              <button class="btn-danger" id="resetProgress">אפס הכל</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Confetti Canvas -->
+    <canvas id="confettiCanvas"></canvas>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

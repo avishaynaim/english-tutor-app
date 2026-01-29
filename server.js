@@ -1,22 +1,38 @@
-const http = require('http');
-const fs = require('fs');
+const express = require('express');
 const path = require('path');
 
-const PORT = 8080;
-const FILE = path.join(__dirname, 'english-tutor.html');
+const app = express();
+const PORT = process.env.PORT || 8080;
 
-const server = http.createServer((req, res) => {
-  res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-  fs.createReadStream(FILE).pipe(res);
+// Serve static files from public directory
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Health check endpoint for Railway
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'healthy', timestamp: new Date().toISOString() });
 });
 
-server.listen(PORT, () => {
-  console.log('');
-  console.log('  English Tutor is running!');
-  console.log('  Open this in Chrome:');
-  console.log('');
-  console.log('  http://localhost:' + PORT);
-  console.log('');
-  console.log('  Press Ctrl+C to stop.');
-  console.log('');
+// API endpoint for lessons (future expansion)
+app.get('/api/lessons', (req, res) => {
+  res.json({ message: 'Lessons API - coming soon' });
+});
+
+// Serve the main app
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// Handle 404
+app.use((req, res) => {
+  res.status(404).sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`
+  ╔══════════════════════════════════════╗
+  ║   English Tutor App v2.0             ║
+  ║   Running on port ${PORT}               ║
+  ║   http://localhost:${PORT}              ║
+  ╚══════════════════════════════════════╝
+  `);
 });
