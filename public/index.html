@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>English Tutor - מורה לאנגלית</title>
-  <meta name="description" content="Learn English with interactive speech recognition - למד אנגלית עם זיהוי דיבור">
+  <meta name="description" content="Learn English with interactive speech recognition">
   <meta name="theme-color" content="#6366f1">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -12,217 +12,248 @@
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎓</text></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="app-container">
-    <!-- Animated background -->
-    <div class="bg-gradient"></div>
-    <div class="bg-shapes">
-      <div class="shape shape-1"></div>
-      <div class="shape shape-2"></div>
-      <div class="shape shape-3"></div>
-    </div>
 
-    <!-- Header -->
-    <header class="header">
-      <button class="btn-icon back-btn" id="backBtn" aria-label="חזור">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M9 18l6-6-6-6"/>
-        </svg>
-      </button>
-      <div class="header-content">
-        <h1 id="headerTitle">English Tutor</h1>
-        <p id="headerSub">בחר נושא ללמוד</p>
-      </div>
-      <button class="btn-icon settings-btn" id="settingsBtn" aria-label="הגדרות">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="3"/>
-          <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
-        </svg>
-      </button>
-    </header>
+  <!-- Ambient Background -->
+  <div class="ambient-bg">
+    <div class="ambient-orb orb-1"></div>
+    <div class="ambient-orb orb-2"></div>
+    <div class="ambient-orb orb-3"></div>
+  </div>
 
-    <!-- Stats Bar -->
-    <div class="stats-bar" id="statsBar">
-      <div class="stat">
-        <span class="stat-icon">⭐</span>
-        <span class="stat-value" id="scoreVal">0</span>
-        <span class="stat-label">נקודות</span>
-      </div>
-      <div class="stat">
-        <span class="stat-icon">🔥</span>
-        <span class="stat-value" id="streakVal">0</span>
-        <span class="stat-label">רצף</span>
-      </div>
-      <div class="stat">
-        <span class="stat-icon">🎯</span>
-        <span class="stat-value" id="attemptVal">1</span>
-        <span class="stat-label">ניסיון</span>
-      </div>
-    </div>
+  <div class="app">
 
-    <!-- Main Content -->
-    <main class="main-content">
-      <!-- Topics Grid -->
-      <div class="topics-view" id="topicsView">
-        <div class="welcome-card">
-          <div class="welcome-icon">👋</div>
-          <h2>!שלום</h2>
-          <p>בחר נושא להתחיל ללמוד אנגלית</p>
+    <!-- ===== HOME VIEW ===== -->
+    <div class="view view-home active" id="viewHome">
+      <header class="topbar">
+        <div class="topbar-right">
+          <div class="level-badge" id="levelBadge">
+            <span class="level-num" id="levelNum">1</span>
+          </div>
+          <div class="xp-info">
+            <span class="xp-label">Level <span id="levelLabel">1</span></span>
+            <div class="xp-bar"><div class="xp-fill" id="xpFill"></div></div>
+          </div>
+        </div>
+        <div class="topbar-left">
+          <div class="streak-badge" id="streakBadge">
+            <span class="streak-fire">🔥</span>
+            <span class="streak-num" id="globalStreak">0</span>
+          </div>
+        </div>
+      </header>
+
+      <div class="home-scroll">
+        <!-- Hero -->
+        <div class="hero">
+          <div class="hero-avatar">🎓</div>
+          <h1>!שלום</h1>
+          <p>מה נלמד היום?</p>
+        </div>
+
+        <!-- Topics -->
+        <div class="section-title">
+          <span>נושאים</span>
+          <span class="topic-count" id="topicCount">0/16</span>
         </div>
         <div class="topics-grid" id="topicsGrid"></div>
       </div>
+    </div>
 
-      <!-- Lesson View -->
-      <div class="lesson-view hidden" id="lessonView">
-        <div class="progress-container">
-          <div class="progress-bar">
-            <div class="progress-fill" id="progressFill"></div>
+    <!-- ===== LESSON VIEW ===== -->
+    <div class="view view-lesson" id="viewLesson">
+      <header class="topbar topbar-lesson">
+        <button class="topbar-btn" id="backBtn" aria-label="חזור">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+        <div class="lesson-topbar-center">
+          <div class="topbar-progress">
+            <div class="topbar-progress-fill" id="progressFill"></div>
           </div>
-          <span class="progress-text" id="progressText">1 / 8</span>
         </div>
+        <div class="topbar-stats">
+          <span class="mini-stat">⭐ <b id="scoreVal">0</b></span>
+          <span class="mini-stat">🔥 <b id="streakVal">0</b></span>
+        </div>
+      </header>
 
-        <div class="lesson-card">
-          <div class="lesson-intro" id="introText">הקשב ואז חזור:</div>
-          <div class="lesson-sentence" id="sentenceText"></div>
-          <div class="lesson-translation" id="translationText"></div>
-          <button class="btn-audio" id="replayBtn" aria-label="השמע שוב">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polygon points="5 3 19 12 5 21 5 3"/>
-            </svg>
-            השמע שוב
+      <div class="lesson-scroll">
+        <div class="step-badge" id="stepBadge">שלב 1 מתוך 8</div>
+
+        <!-- Sentence Card -->
+        <div class="sentence-card" id="sentenceCard">
+          <div class="sentence-card-glow"></div>
+          <div class="sentence-label" id="introText">הקשב ואז חזור:</div>
+          <div class="sentence-english" id="sentenceText"></div>
+          <div class="sentence-hebrew" id="translationText"></div>
+          <button class="replay-btn" id="replayBtn">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M8 5v14l11-7z"/></svg>
+            <span>השמע שוב</span>
           </button>
         </div>
 
-        <div class="feedback-area" id="feedbackArea">
-          <div class="feedback-message" id="feedback"></div>
-        </div>
+        <!-- Feedback -->
+        <div class="feedback-container" id="feedbackContainer"></div>
 
-        <div class="action-area" id="actionArea">
-          <!-- Listening State -->
-          <div class="state-indicator listening hidden" id="listeningState">
-            <div class="ear-animation">
-              <span class="ear-icon">👂</span>
-              <div class="sound-waves">
-                <span></span><span></span><span></span>
+        <!-- Action Area -->
+        <div class="action-area">
+          <!-- Listening -->
+          <div class="state hidden" id="stateListening">
+            <div class="listening-visual">
+              <div class="listen-ring ring-1"></div>
+              <div class="listen-ring ring-2"></div>
+              <div class="listen-ring ring-3"></div>
+              <span class="listen-ear">👂</span>
+            </div>
+            <p class="state-text">...מקשיב</p>
+          </div>
+
+          <!-- Speaking -->
+          <div class="state hidden" id="stateSpeaking">
+            <div class="mic-orb">
+              <div class="mic-pulse"></div>
+              <div class="mic-pulse mic-pulse-2"></div>
+              <div class="mic-core">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
               </div>
             </div>
-            <p>...הקשב</p>
-          </div>
-
-          <!-- Speaking State -->
-          <div class="state-indicator speaking hidden" id="speakingState">
-            <div class="mic-button active">
-              <svg viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
-                <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
-              </svg>
-            </div>
-            <div class="voice-bars">
+            <div class="waveform">
               <span></span><span></span><span></span><span></span><span></span>
+              <span></span><span></span><span></span><span></span>
             </div>
-            <p>...דבר עכשיו</p>
+            <p class="state-text">...דבר עכשיו</p>
           </div>
 
-          <!-- Idle State -->
-          <div class="state-indicator idle" id="idleState">
-            <button class="btn-start-speaking" id="startSpeakingBtn">
-              <svg viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
-                <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
-              </svg>
-              לחץ לדבר
+          <!-- Idle -->
+          <div class="state" id="stateIdle">
+            <button class="mic-start-btn" id="startBtn">
+              <div class="mic-start-icon">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
+              </div>
+              <span>לחץ להתחיל</span>
             </button>
           </div>
         </div>
 
-        <button class="btn-skip hidden" id="skipBtn">
-          דלג על זה ←
+        <button class="skip-btn hidden" id="skipBtn">דלג ←</button>
+      </div>
+    </div>
+
+    <!-- ===== COMPLETE VIEW ===== -->
+    <div class="view view-complete" id="viewComplete">
+      <div class="complete-content">
+        <div class="complete-trophy">🏆</div>
+        <h2>!כל הכבוד</h2>
+        <p class="complete-sub">סיימת את השיעור בהצלחה</p>
+
+        <div class="result-cards">
+          <div class="result-card">
+            <div class="result-icon">⭐</div>
+            <div class="result-value" id="finalScore">0</div>
+            <div class="result-label">נקודות</div>
+          </div>
+          <div class="result-card">
+            <div class="result-icon">🎯</div>
+            <div class="result-value" id="finalAccuracy">0%</div>
+            <div class="result-label">דיוק</div>
+          </div>
+          <div class="result-card">
+            <div class="result-icon">⚡</div>
+            <div class="result-value" id="finalXP">+0</div>
+            <div class="result-label">XP</div>
+          </div>
+        </div>
+
+        <button class="btn-continue" id="continueBtn">המשך ללמוד</button>
+      </div>
+    </div>
+
+    <!-- ===== SETTINGS VIEW ===== -->
+    <div class="view view-settings" id="viewSettings">
+      <header class="topbar">
+        <button class="topbar-btn" id="settingsBackBtn" aria-label="חזור">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>
         </button>
-      </div>
-
-      <!-- Complete Screen -->
-      <div class="complete-view hidden" id="completeView">
-        <div class="complete-card">
-          <div class="complete-icon">🎉</div>
-          <h2>!כל הכבוד</h2>
-          <div class="complete-stats">
-            <div class="complete-stat">
-              <span class="complete-stat-value" id="finalScore">0</span>
-              <span class="complete-stat-label">נקודות</span>
+        <h2 class="topbar-title">הגדרות</h2>
+        <div style="width:44px"></div>
+      </header>
+      <div class="settings-scroll">
+        <div class="settings-group">
+          <div class="settings-group-title">שמע</div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <span class="setting-icon">🗣️</span>
+              <span>מהירות דיבור</span>
             </div>
-            <div class="complete-stat">
-              <span class="complete-stat-value" id="finalAccuracy">0%</span>
-              <span class="complete-stat-label">דיוק</span>
+            <div class="setting-action">
+              <input type="range" id="speechRate" min="0.5" max="1.5" step="0.1" value="0.85" class="range-input">
+              <span class="range-val" id="speechRateVal">0.85x</span>
             </div>
           </div>
-          <p class="complete-message">סיימת את השיעור בהצלחה!</p>
-          <button class="btn-primary" id="continueBtn">בחר שיעור נוסף</button>
+          <div class="setting-row">
+            <div class="setting-info">
+              <span class="setting-icon">📳</span>
+              <span>רטט</span>
+            </div>
+            <div class="setting-action">
+              <button class="toggle active" id="vibrationToggle"><span class="toggle-knob"></span></button>
+            </div>
+          </div>
         </div>
-      </div>
-
-      <!-- No Support Message -->
-      <div class="no-support hidden" id="noSupport">
-        <div class="no-support-card">
-          <div class="no-support-icon">😔</div>
-          <h2>הדפדפן לא נתמך</h2>
-          <p>האפליקציה דורשת תמיכה בזיהוי דיבור.<br>נא להשתמש ב-<strong>Google Chrome</strong></p>
+        <div class="settings-group">
+          <div class="settings-group-title">תצוגה</div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <span class="setting-icon">🌙</span>
+              <span>מצב כהה</span>
+            </div>
+            <div class="setting-action">
+              <button class="toggle" id="darkModeToggle"><span class="toggle-knob"></span></button>
+            </div>
+          </div>
         </div>
-      </div>
-    </main>
-
-    <!-- Settings Modal -->
-    <div class="modal hidden" id="settingsModal">
-      <div class="modal-backdrop"></div>
-      <div class="modal-content">
-        <div class="modal-header">
-          <h3>הגדרות</h3>
-          <button class="btn-icon modal-close" id="closeSettings">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M18 6L6 18M6 6l12 12"/>
-            </svg>
-          </button>
-        </div>
-        <div class="modal-body">
-          <div class="setting-item">
-            <label>מהירות דיבור</label>
-            <div class="setting-control">
-              <input type="range" id="speechRate" min="0.5" max="1.5" step="0.1" value="0.85">
-              <span id="speechRateVal">0.85x</span>
+        <div class="settings-group">
+          <div class="settings-group-title">נתונים</div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <span class="setting-icon">🗑️</span>
+              <span>איפוס התקדמות</span>
             </div>
-          </div>
-          <div class="setting-item">
-            <label>מצב כהה</label>
-            <div class="setting-control">
-              <button class="toggle-btn" id="darkModeToggle" role="switch" aria-checked="false">
-                <span class="toggle-slider"></span>
-              </button>
-            </div>
-          </div>
-          <div class="setting-item">
-            <label>רטט</label>
-            <div class="setting-control">
-              <button class="toggle-btn active" id="vibrationToggle" role="switch" aria-checked="true">
-                <span class="toggle-slider"></span>
-              </button>
-            </div>
-          </div>
-          <div class="setting-item">
-            <label>איפוס התקדמות</label>
-            <div class="setting-control">
-              <button class="btn-danger" id="resetProgress">אפס הכל</button>
+            <div class="setting-action">
+              <button class="btn-reset" id="resetProgress">אפס</button>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Confetti Canvas -->
-    <canvas id="confettiCanvas"></canvas>
+    <!-- No Support -->
+    <div class="no-support hidden" id="noSupport">
+      <div class="no-support-inner">
+        <span style="font-size:4rem">😔</span>
+        <h2>הדפדפן לא נתמך</h2>
+        <p>נא להשתמש ב-<strong>Google Chrome</strong></p>
+      </div>
+    </div>
+
+    <!-- Bottom Nav -->
+    <nav class="bottom-nav" id="bottomNav">
+      <button class="nav-item active" data-view="home">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+        <span>בית</span>
+      </button>
+      <button class="nav-item" data-view="settings">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.488.488 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.07.62-.07.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6A3.6 3.6 0 1 1 12 8.4a3.6 3.6 0 0 1 0 7.2z"/></svg>
+        <span>הגדרות</span>
+      </button>
+    </nav>
+
   </div>
 
+  <canvas id="confettiCanvas"></canvas>
   <script src="app.js"></script>
 </body>
 </html>
