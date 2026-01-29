@@ -1,12 +1,11 @@
 const express = require('express');
 const path = require('path');
-const Anthropic = require('@anthropic-ai/sdk');
 
 const app = express();
 const PORT = process.env.PORT || 8080;
 
-// Initialize Anthropic client (uses ANTHROPIC_API_KEY env var automatically)
-const anthropic = new Anthropic();
+// OpenRouter API key
+const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 
 // Parse JSON bodies
 app.use(express.json());
@@ -24,7 +23,7 @@ app.get('/api/lessons', (req, res) => {
   res.json({ message: 'Lessons API - coming soon' });
 });
 
-// Generate lesson using Claude AI
+// Generate lesson using OpenRouter AI
 app.post('/api/generate-lesson', async (req, res) => {
   const { scenario } = req.body;
   if (!scenario) {
@@ -32,13 +31,21 @@ app.post('/api/generate-lesson', async (req, res) => {
   }
 
   try {
-    const message = await anthropic.messages.create({
-      model: 'claude-haiku-4-20250414',
-      max_tokens: 1024,
-      messages: [
-        {
-          role: 'user',
-          content: `You are an English teacher creating a lesson for Hebrew-speaking students learning English.
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': 'https://english-tutor-app-production.up.railway.app',
+        'X-Title': 'English Tutor App'
+      },
+      body: JSON.stringify({
+        model: 'anthropic/claude-3-haiku',
+        max_tokens: 1024,
+        messages: [
+          {
+            role: 'user',
+            content: `You are an English teacher creating a lesson for Hebrew-speaking students learning English.
 
 Create a practical English lesson based on this scenario: "${scenario}"
 
@@ -54,19 +61,26 @@ Respond ONLY with valid JSON in this exact format (no other text):
   "sentences": ["sentence 1", "sentence 2", "sentence 3", "sentence 4", "sentence 5", "sentence 6", "sentence 7"],
   "translations": ["תרגום 1", "תרגום 2", "תרגום 3", "תרגום 4", "תרגום 5", "תרגום 6", "תרגום 7"]
 }`
-        }
-      ]
+          }
+        ]
+      })
     });
 
-    // Parse the response
-    const content = message.content[0].text;
-    const data = JSON.parse(content);
+    const result = await response.json();
 
-    if (data.sentences && data.translations) {
-      res.json(data);
-    } else {
-      throw new Error('Invalid response format');
+    if (result.choices && result.choices[0] && result.choices[0].message) {
+      const content = result.choices[0].message.content;
+      // Try to extract JSON from the response
+      const jsonMatch = content.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        const data = JSON.parse(jsonMatch[0]);
+        if (data.sentences && data.translations) {
+          return res.json(data);
+        }
+      }
     }
+
+    throw new Error('Invalid response format');
   } catch (error) {
     console.error('AI generation error:', error);
 
@@ -74,7 +88,7 @@ Respond ONLY with valid JSON in this exact format (no other text):
     res.json({
       sentences: [
         "Hello, how can I help you?",
-        "I would like to ask about " + scenario.slice(0, 20) + ".",
+        "I would like to ask about this.",
         "Can you tell me more?",
         "That sounds interesting.",
         "How much does it cost?",
@@ -83,7 +97,7 @@ Respond ONLY with valid JSON in this exact format (no other text):
       ],
       translations: [
         "שלום, איך אפשר לעזור לך?",
-        "אני רוצה לשאול על " + scenario.slice(0, 20) + ".",
+        "אני רוצה לשאול על זה.",
         "אתה יכול לספר לי עוד?",
         "זה נשמע מעניין.",
         "כמה זה עולה?",
