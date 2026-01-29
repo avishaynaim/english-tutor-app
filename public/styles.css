@@ -449,6 +449,11 @@ button{font-family:inherit;cursor:pointer}
 }
 .btn-reset:active{transform:scale(.95)}
 
+.app-version{
+  text-align:center;padding:20px;margin-top:20px;
+  font-size:.75rem;color:var(--text-3);font-weight:500;
+}
+
 /* ===== Bottom Nav ===== */
 .bottom-nav{
   position:fixed;bottom:0;left:0;right:0;z-index:50;
