@@ -40,6 +40,7 @@ function init(){
   setupEvents();
   checkSpeech();
   initConfetti();
+  initRipples();
   updateXPDisplay();
 }
 
@@ -91,10 +92,10 @@ function renderTopics(){
     const color=TOPIC_COLORS[i%TOPIC_COLORS.length];
     const done=userData.completedTopics.includes(key);
     const card=document.createElement('div');
-    card.className='topic-card';
+    card.className='topic-card ripple-container';
     card.setAttribute('data-color',color);
     card.style.animationDelay=(i*0.05)+'s';
-    card.onclick=()=>startLesson(key);
+    card.onclick=(e)=>{addRipple(e);startLesson(key)};
     card.innerHTML=`
       ${done?'<div class="topic-check">✓</div>':''}
       <div class="topic-icon">${l.icon}</div>
@@ -230,24 +231,59 @@ function goHome(){
   releaseWakeLock();
 }
 
-function showStep(){
+function showStep(animate=false){
   const l=lessons[currentLesson],total=l.sentences.length;
-  $('progressFill').style.width=((currentStep/total)*100)+'%';
-  $('stepBadge').textContent=`שלב ${currentStep+1} מתוך ${total}`;
-  $('sentenceText').textContent=l.sentences[currentStep];
-  $('translationText').textContent=l.translations[currentStep];
-  $('introText').textContent=currentStep===0?"הקשב ואז חזור:":"עכשיו תגיד:";
-  $('feedbackContainer').innerHTML='';
-  $('skipBtn').classList.add('hidden');
   const card=$('sentenceCard');
-  card.classList.remove('success-glow','partial-glow','shake','glow');
-  safeTimeout(()=>card.classList.add('glow'),100);
-  attempts=1;updateLessonStats();
+
+  const doUpdate=()=>{
+    $('progressFill').style.width=((currentStep/total)*100)+'%';
+    $('stepBadge').textContent=`שלב ${currentStep+1} מתוך ${total}`;
+    $('sentenceText').textContent=l.sentences[currentStep];
+    $('translationText').textContent=l.translations[currentStep];
+    $('introText').textContent=currentStep===0?"הקשב ואז חזור:":"עכשיו תגיד:";
+    $('feedbackContainer').innerHTML='';
+    $('skipBtn').classList.add('hidden');
+    card.classList.remove('success-glow','partial-glow','shake','glow','step-out','step-in');
+    if(animate){
+      card.classList.add('step-in');
+    }
+    safeTimeout(()=>card.classList.add('glow'),100);
+    attempts=1;updateLessonStats();
+  };
+
+  if(animate){
+    card.classList.add('step-out');
+    safeTimeout(()=>doUpdate(),250);
+  }else{
+    doUpdate();
+  }
 }
 
-function updateLessonStats(){
-  $('scoreVal').textContent=score;
-  $('streakVal').textContent=streak;
+function updateLessonStats(animated=false){
+  const scoreEl=$('scoreVal');
+  const streakEl=$('streakVal');
+  scoreEl.textContent=score;
+  streakEl.textContent=streak;
+
+  // Animate score bump
+  if(animated){
+    scoreEl.classList.remove('score-bump');
+    void scoreEl.offsetWidth;
+    scoreEl.classList.add('score-bump');
+  }
+
+  // Hot streak effect when streak >= 3
+  const badge=$('streakBadge');
+  if(streak>=3){
+    badge.classList.add('hot');
+    if(animated){
+      streakEl.classList.remove('streak-bump');
+      void streakEl.offsetWidth;
+      streakEl.classList.add('streak-bump');
+    }
+  }else{
+    badge.classList.remove('hot');
+  }
 }
 
 function speakThenListen(){
@@ -328,7 +364,7 @@ function evaluateResponse(spoken){
 
   if(sc>=0.85){
     const pts=attempts===1?3:attempts===2?2:1;
-    score+=pts;streak++;updateLessonStats();
+    score+=pts;streak++;updateLessonStats(true);
     fb.innerHTML=`<div class="feedback-box correct"><div class="feedback-icon">🎉</div><div class="feedback-text">מצוין!</div><div class="feedback-heard">"${esc(spoken)}"</div></div>`;
     card.classList.remove('glow');card.classList.add('success-glow');
     launchConfetti();vibrate(100);setState('idle');
@@ -384,8 +420,8 @@ function nextStep(){
     safeTimeout(()=>sayHebrew('מזל טוב! סיימת את השיעור!',null),100);
     releaseWakeLock();
   } else {
-    showStep();
-    safeTimeout(()=>{if(currentLesson) setState('idle')},300);
+    showStep(true);
+    safeTimeout(()=>{if(currentLesson) setState('idle')},500);
   }
 }
 
@@ -441,6 +477,28 @@ function showSparkles(){
   setTimeout(()=>c.remove(),1600);
 }
 function showCompletionFireworks(){launchConfetti();setTimeout(launchConfetti,500);setTimeout(launchConfetti,1000)}
+
+// ===== Button Ripple Effect =====
+function addRipple(e){
+  const btn=e.currentTarget;
+  const ripple=document.createElement('span');
+  ripple.className='ripple';
+  const rect=btn.getBoundingClientRect();
+  const size=Math.max(rect.width,rect.height);
+  ripple.style.width=ripple.style.height=size+'px';
+  ripple.style.left=(e.clientX-rect.left-size/2)+'px';
+  ripple.style.top=(e.clientY-rect.top-size/2)+'px';
+  btn.appendChild(ripple);
+  ripple.addEventListener('animationend',()=>ripple.remove());
+}
+
+function initRipples(){
+  const rippleButtons=document.querySelectorAll('.mic-start-btn,.btn-continue,.topic-card,.replay-btn,.nav-item');
+  rippleButtons.forEach(btn=>{
+    btn.classList.add('ripple-container');
+    btn.addEventListener('click',addRipple);
+  });
+}
 
 // ===== Service Worker =====
 if('serviceWorker' in navigator) addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(()=>{}));

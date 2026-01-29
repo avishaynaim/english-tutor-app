@@ -110,9 +110,25 @@ button{font-family:inherit;cursor:pointer}
 .streak-badge{
   display:flex;align-items:center;gap:4px;
   background:var(--bg-input);padding:6px 14px;border-radius:20px;
-  font-weight:700;font-size:.95rem
+  font-weight:700;font-size:.95rem;
+  transition:all .3s ease;
 }
-.streak-fire{font-size:1.1rem}
+.streak-badge.hot{
+  background:linear-gradient(135deg,#ff6b35,#f7931e);
+  color:#fff;
+  box-shadow:0 4px 15px rgba(247,147,30,.4);
+  animation:streakPulse 1s ease-in-out infinite;
+}
+.streak-fire{font-size:1.1rem;transition:transform .3s}
+.streak-badge.hot .streak-fire{animation:fireWiggle 0.5s ease-in-out infinite}
+@keyframes streakPulse{
+  0%,100%{transform:scale(1)}
+  50%{transform:scale(1.05)}
+}
+@keyframes fireWiggle{
+  0%,100%{transform:rotate(-5deg) scale(1.1)}
+  50%{transform:rotate(5deg) scale(1.2)}
+}
 
 /* ===== Home ===== */
 .home-scroll{flex:1;overflow-y:auto;padding:0 16px 100px;-webkit-overflow-scrolling:touch}
@@ -469,6 +485,43 @@ button{font-family:inherit;cursor:pointer}
   80%{transform:translateX(4px)}
 }
 .shake{animation:shake .5s ease}
+
+/* ===== Button Ripple ===== */
+.ripple-container{position:relative;overflow:hidden}
+.ripple{
+  position:absolute;border-radius:50%;
+  background:rgba(255,255,255,.4);
+  transform:scale(0);animation:rippleAnim .6s ease-out forwards;
+  pointer-events:none;
+}
+@keyframes rippleAnim{
+  to{transform:scale(4);opacity:0}
+}
+
+/* ===== Animated Numbers ===== */
+.score-bump{animation:scoreBump .4s ease}
+@keyframes scoreBump{
+  0%{transform:scale(1)}
+  50%{transform:scale(1.4);color:var(--success)}
+  100%{transform:scale(1)}
+}
+.streak-bump{animation:streakBump .4s ease}
+@keyframes streakBump{
+  0%{transform:scale(1)}
+  50%{transform:scale(1.5);color:var(--warning)}
+  100%{transform:scale(1)}
+}
+
+/* ===== Step Transition ===== */
+.sentence-card.step-out{animation:stepOut .25s ease forwards}
+.sentence-card.step-in{animation:stepIn .3s ease forwards}
+@keyframes stepOut{
+  to{opacity:0;transform:translateX(-30px)}
+}
+@keyframes stepIn{
+  from{opacity:0;transform:translateX(30px)}
+  to{opacity:1;transform:translateX(0)}
+}
 
 /* ===== Responsive ===== */
 @media(max-width:360px){
