@@ -24,8 +24,9 @@ const lessons = {
 // ===== State =====
 let currentLesson=null,currentStep=0,recognition=null,listenActive=false,advancing=false;
 let pendingTimers=[],attempts=0,score=0,streak=0,wakeLock=null;
+let customLesson=null; // For custom text/scenario lessons
 
-let userData={xp:0,level:1,completedTopics:[],totalScore:0};
+let userData={xp:0,level:1,completedTopics:[],totalScore:0,customLessons:[]};
 let settings={speechRate:.85,darkMode:false,vibration:true};
 
 const $=id=>document.getElementById(id);
@@ -108,7 +109,7 @@ function renderTopics(){
 // ===== Events =====
 function setupEvents(){
   $('backBtn').onclick=goHome;
-  $('replayBtn').onclick=()=>{if(currentLesson) sayEnglish(lessons[currentLesson].sentences[currentStep])};
+  $('replayBtn').onclick=()=>{if(currentLesson){const l=getCurrentLessonData();sayEnglish(l.sentences[currentStep])}};
   $('startBtn').onclick=speakThenListen;
   $('skipBtn').onclick=skipStep;
   $('continueBtn').onclick=goHome;
@@ -119,16 +120,18 @@ function setupEvents(){
       const view=btn.dataset.view;
       if(view==='home') showView('viewHome');
       else if(view==='settings') showView('viewSettings');
+      else if(view==='create') {showView('viewCreate');renderRecentLessons()}
       document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
       btn.classList.add('active');
     };
   });
 
-  $('settingsBackBtn').onclick=()=>{
-    showView('viewHome');
-    document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
-    document.querySelector('[data-view="home"]').classList.add('active');
-  };
+  $('settingsBackBtn').onclick=goHomeNav;
+  $('createBackBtn').onclick=goHomeNav;
+
+  // Create view events
+  $('generateScenarioBtn').onclick=generateScenarioLesson;
+  $('startCustomTextBtn').onclick=startCustomTextLesson;
 
   // Settings
   $('speechRate').oninput=e=>{
@@ -159,8 +162,14 @@ function setupEvents(){
 function showView(id){
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   $(id).classList.add('active');
-  const showNav=id==='viewHome'||id==='viewSettings';
+  const showNav=id==='viewHome'||id==='viewSettings'||id==='viewCreate';
   $('bottomNav').style.display=showNav?'flex':'none';
+}
+
+function goHomeNav(){
+  showView('viewHome');
+  document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
+  document.querySelector('[data-view="home"]').classList.add('active');
 }
 
 // ===== Speech Check =====
@@ -206,8 +215,148 @@ function sayHebrew(text,cb){
   speechSynthesis.speak(u);
 }
 
+// ===== Custom Lessons =====
+function generateScenarioLesson(){
+  const input=$('scenarioInput').value.trim();
+  if(!input){alert('אנא תאר תרחיש');return}
+
+  $('scenarioLoading').classList.remove('hidden');
+  $('generateScenarioBtn').classList.add('hidden');
+
+  fetch('/api/generate-lesson',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({scenario:input})
+  })
+  .then(r=>r.json())
+  .then(data=>{
+    $('scenarioLoading').classList.add('hidden');
+    $('generateScenarioBtn').classList.remove('hidden');
+
+    if(data.sentences&&data.sentences.length>0){
+      customLesson={
+        title:input.slice(0,30)+(input.length>30?'...':''),
+        icon:'🎭',
+        sentences:data.sentences,
+        translations:data.translations||data.sentences.map(()=>''),
+        isCustom:true,
+        createdAt:Date.now()
+      };
+      saveCustomLesson(customLesson);
+      startCustomLesson(customLesson);
+    }else{
+      alert('לא הצלחנו ליצור שיעור. נסה שוב.');
+    }
+  })
+  .catch(e=>{
+    $('scenarioLoading').classList.add('hidden');
+    $('generateScenarioBtn').classList.remove('hidden');
+    alert('שגיאה ביצירת השיעור. נסה שוב.');
+  });
+}
+
+function startCustomTextLesson(){
+  const input=$('customTextInput').value.trim();
+  if(!input){alert('אנא הכנס טקסט באנגלית');return}
+
+  // Parse sentences (split by newline or period)
+  const sentences=input
+    .split(/[\n.!?]+/)
+    .map(s=>s.trim())
+    .filter(s=>s.length>0)
+    .map(s=>s.endsWith('.')||s.endsWith('!')||s.endsWith('?')?s:s+'.');
+
+  if(sentences.length===0){alert('לא נמצאו משפטים תקינים');return}
+
+  customLesson={
+    title:'תרגול מותאם',
+    icon:'📝',
+    sentences:sentences.slice(0,10), // Max 10 sentences
+    translations:sentences.map(()=>'(תרגום לא זמין)'),
+    isCustom:true,
+    createdAt:Date.now()
+  };
+
+  saveCustomLesson(customLesson);
+  startCustomLesson(customLesson);
+}
+
+function saveCustomLesson(lesson){
+  if(!userData.customLessons) userData.customLessons=[];
+  // Keep only last 5 custom lessons
+  userData.customLessons.unshift({...lesson,id:Date.now()});
+  if(userData.customLessons.length>5) userData.customLessons=userData.customLessons.slice(0,5);
+  saveUser();
+}
+
+function renderRecentLessons(){
+  const container=$('recentLessons');
+  const list=$('recentList');
+  if(!userData.customLessons||userData.customLessons.length===0){
+    container.classList.add('hidden');
+    return;
+  }
+  container.classList.remove('hidden');
+  list.innerHTML='';
+  userData.customLessons.forEach(lesson=>{
+    const item=document.createElement('div');
+    item.className='recent-item ripple-container';
+    item.onclick=(e)=>{addRipple(e);startCustomLesson(lesson)};
+    item.innerHTML=`
+      <div class="recent-item-icon">${lesson.icon}</div>
+      <div class="recent-item-info">
+        <div class="recent-item-title">${esc(lesson.title)}</div>
+        <div class="recent-item-count">${lesson.sentences.length} משפטים</div>
+      </div>
+    `;
+    list.appendChild(item);
+  });
+}
+
+function startCustomLesson(lesson){
+  customLesson=lesson;
+  currentLesson='__custom__';
+  currentStep=0;advancing=false;
+  attempts=1;score=0;streak=0;
+  clearAllTimers();
+  showView('viewLesson');
+  $('feedbackContainer').innerHTML='';
+  $('skipBtn').classList.add('hidden');
+  updateLessonStats();
+  showStepCustom();
+  requestWakeLock();
+  safeTimeout(()=>{if(currentLesson) setState('idle')},500);
+}
+
+function showStepCustom(animate=false){
+  const l=customLesson,total=l.sentences.length;
+  const card=$('sentenceCard');
+
+  const doUpdate=()=>{
+    $('progressFill').style.width=((currentStep/total)*100)+'%';
+    $('stepBadge').textContent=`שלב ${currentStep+1} מתוך ${total}`;
+    $('sentenceText').textContent=l.sentences[currentStep];
+    $('translationText').textContent=l.translations[currentStep]||'';
+    $('introText').textContent=currentStep===0?"הקשב ואז חזור:":"עכשיו תגיד:";
+    $('feedbackContainer').innerHTML='';
+    $('skipBtn').classList.add('hidden');
+    card.classList.remove('success-glow','partial-glow','shake','glow','step-out','step-in');
+    if(animate) card.classList.add('step-in');
+    safeTimeout(()=>card.classList.add('glow'),100);
+    attempts=1;updateLessonStats();
+  };
+
+  if(animate){
+    card.classList.add('step-out');
+    safeTimeout(()=>doUpdate(),250);
+  }else{
+    doUpdate();
+  }
+}
+
 // ===== Lesson Flow =====
 function startLesson(topic){
+  customLesson=null; // Clear custom lesson
   currentLesson=topic;currentStep=0;advancing=false;
   attempts=1;score=0;streak=0;
   clearAllTimers();
@@ -286,10 +435,16 @@ function updateLessonStats(animated=false){
   }
 }
 
+function getCurrentLessonData(){
+  if(currentLesson==='__custom__'&&customLesson) return customLesson;
+  return lessons[currentLesson];
+}
+
 function speakThenListen(){
   if(!currentLesson)return;
   stopListeningQuiet();setState('listening');speechSynthesis.cancel();
-  const text=lessons[currentLesson].sentences[currentStep];
+  const lessonData=getCurrentLessonData();
+  const text=lessonData.sentences[currentStep];
   safeTimeout(()=>{
     if(!currentLesson)return;
     sayHebrew('הקשב וחזור',()=>{
@@ -356,7 +511,8 @@ function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g
 function evaluateResponse(spoken){
   if(!currentLesson)return;
   stopListeningQuiet();
-  const target=lessons[currentLesson].sentences[currentStep];
+  const lessonData=getCurrentLessonData();
+  const target=lessonData.sentences[currentStep];
   const sc=similarity(spoken,target);
   const card=$('sentenceCard');
   const fb=$('feedbackContainer');
@@ -369,7 +525,7 @@ function evaluateResponse(spoken){
     card.classList.remove('glow');card.classList.add('success-glow');
     launchConfetti();vibrate(100);setState('idle');
     advancing=true;
-    const isLast=currentStep>=lessons[currentLesson].sentences.length-1;
+    const isLast=currentStep>=lessonData.sentences.length-1;
     safeTimeout(()=>{
       if(!currentLesson)return;
       sayHebrew(isLast?'כל הכבוד! סיימת!':'מצוין!',()=>{if(!currentLesson)return;safeTimeout(nextStep,300)});
@@ -398,11 +554,12 @@ function skipStep(){
 function nextStep(){
   advancing=false;currentStep++;
   if(!currentLesson)return;
-  const total=lessons[currentLesson].sentences.length;
+  const lessonData=getCurrentLessonData();
+  const total=lessonData.sentences.length;
   if(currentStep>=total){
     stopListening();
-    // Mark completed
-    if(!userData.completedTopics.includes(currentLesson)){
+    // Mark completed (only for predefined lessons)
+    if(currentLesson!=='__custom__'&&!userData.completedTopics.includes(currentLesson)){
       userData.completedTopics.push(currentLesson);
     }
     const xpEarned=score*2;
@@ -420,7 +577,9 @@ function nextStep(){
     safeTimeout(()=>sayHebrew('מזל טוב! סיימת את השיעור!',null),100);
     releaseWakeLock();
   } else {
-    showStep(true);
+    // Use appropriate showStep based on lesson type
+    if(currentLesson==='__custom__') showStepCustom(true);
+    else showStep(true);
     safeTimeout(()=>{if(currentLesson) setState('idle')},500);
   }
 }
