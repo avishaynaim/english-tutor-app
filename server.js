@@ -45,21 +45,28 @@ app.post('/api/generate-lesson', async (req, res) => {
         messages: [
           {
             role: 'user',
-            content: `You are an English teacher creating a lesson for Hebrew-speaking students learning English.
+            content: `You are an English teacher creating a lesson for young children (ages 6-10) learning English as a second language.
 
-Create a practical English lesson based on this scenario: "${scenario}"
+Create a simple English lesson based on this scenario: "${scenario}"
 
-Generate exactly 7 simple, practical sentences that someone would actually say in this situation.
-The sentences should:
-- Be appropriate for beginner to intermediate English learners
-- Progress naturally through the scenario (greeting, main interaction, closing)
-- Use common, everyday vocabulary
-- Be 5-15 words each
+Generate exactly 8 very short, simple sentences that a child would say in this situation.
+
+IMPORTANT RULES:
+- Each sentence must be 3-6 words MAXIMUM (very short!)
+- Use only basic, simple words children know
+- No complex grammar - simple present tense only
+- Progress through the scenario naturally
+
+Examples of good short sentences:
+- "Hello! How are you?"
+- "I want ice cream."
+- "Thank you very much!"
+- "Where is the park?"
 
 Respond ONLY with valid JSON in this exact format (no other text):
 {
-  "sentences": ["sentence 1", "sentence 2", "sentence 3", "sentence 4", "sentence 5", "sentence 6", "sentence 7"],
-  "translations": ["תרגום 1", "תרגום 2", "תרגום 3", "תרגום 4", "תרגום 5", "תרגום 6", "תרגום 7"]
+  "sentences": ["short sentence 1", "short sentence 2", "short sentence 3", "short sentence 4", "short sentence 5", "short sentence 6", "short sentence 7", "short sentence 8"],
+  "translations": ["תרגום 1", "תרגום 2", "תרגום 3", "תרגום 4", "תרגום 5", "תרגום 6", "תרגום 7", "תרגום 8"]
 }`
           }
         ]
@@ -87,22 +94,24 @@ Respond ONLY with valid JSON in this exact format (no other text):
     // Fallback to default sentences if AI fails
     res.json({
       sentences: [
-        "Hello, how can I help you?",
-        "I would like to ask about this.",
-        "Can you tell me more?",
-        "That sounds interesting.",
-        "How much does it cost?",
-        "Thank you for your help.",
-        "Have a nice day!"
+        "Hello!",
+        "How are you?",
+        "I am fine.",
+        "What is this?",
+        "I like it.",
+        "Thank you!",
+        "Goodbye!",
+        "See you soon!"
       ],
       translations: [
-        "שלום, איך אפשר לעזור לך?",
-        "אני רוצה לשאול על זה.",
-        "אתה יכול לספר לי עוד?",
-        "זה נשמע מעניין.",
-        "כמה זה עולה?",
-        "תודה על העזרה.",
-        "יום נעים!"
+        "שלום!",
+        "מה שלומך?",
+        "אני בסדר.",
+        "מה זה?",
+        "אני אוהב את זה.",
+        "תודה!",
+        "להתראות!",
+        "נתראה בקרוב!"
       ]
     });
   }
